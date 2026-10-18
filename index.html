@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuangan Rama</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .pos-container {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .pos-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #bdc3c7;
+        }
+        .pos-item:last-child {
+            border-bottom: none;
+        }
+        .edit-pct-container {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed #bdc3c7;
+        }
+        .edit-pct-inputs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .edit-pct-inputs .form-group {
+            margin-bottom: 5px;
+        }
+        .edit-pct-inputs label {
+            font-size: 12px;
+        }
+        .total-pemasukan {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+            color: #27ae60;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fff;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            width: auto;
+        }
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+        .error-msg {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Keuangan Rama</h1>
+    <p style="text-align: center; color: #7f8c8d;">Catat penghasilan dan bagi otomatis ke 5 pos pengeluaran</p>
+
+    <!-- Form Tambah Penghasilan -->
+    <div class="form-group">
+        <label for="deskripsi">Keterangan Sumber Pemasukan:</label>
+        <input type="text" id="deskripsi" placeholder="Misal: Gaji Bulanan, Jual Barang">
+    </div>
+    <div class="form-group">
+        <label for="nominal">Nominal Pemasukan (Rp):</label>
+        <input type="number" id="nominal" min="0" placeholder="Masukkan jumlah uang">
+    </div>
+    <button onclick="tambahPemasukan()">Tambah Penghasilan</button>
+
+    <hr style="margin: 25px 0; border: 0; border-top: 1px solid #dcdde1;">
+
+    <!-- Alokasi Pos Pengeluaran -->
+    <h2>Pembagian Pos Pengeluaran</h2>
+    <div class="pos-container">
+        <div class="pos-item">
+            <span id="label-konsumsi">Konsumsi (40%)</span>
+            <span id="val-konsumsi">Rp 0</span>
+        </div>
+        <div class="pos-item">
+            <span id="label-tabungan">Tabungan (20%)</span>
+            <span id="val-tabungan">Rp 0</span>
+        </div>
+        <div class="pos-item">
+            <span id="label-investasi">Investasi (20%)</span>
+            <span id="val-investasi">Rp 0</span>
+        </div>
+        <div class="pos-item">
+            <span id="label-masaDepan">Dana Masa Depan (10%)</span>
+            <span id="val-masaDepan">Rp 0</span>
+        </div>
+        <div class="pos-item">
+            <span id="label-darurat">Dana Darurat (10%)</span>
+            <span id="val-darurat">Rp 0</span>
+        </div>
+        <div class="total-pemasukan" id="total-pemasukan">Total Penghasilan: Rp 0</div>
+
+        <!-- Fitur Edit Persentase -->
+        <div class="edit-pct-container">
+            <label style="color: #2980b9;">⚙️ Atur Ulang Persentase Pos (%)</label>
+            <div class="edit-pct-inputs">
+                <div class="form-group">
+                    <label>Konsumsi (%):</label>
+                    <input type="number" id="pct-konsumsi" value="40" min="0" max="100" onchange="updatePersentase()">
+                </div>
+                <div class="form-group">
+                    <label>Tabungan (%):</label>
+                    <input type="number" id="pct-tabungan" value="20" min="0" max="100" onchange="updatePersentase()">
+                </div>
+                <div class="form-group">
+                    <label>Investasi (%):</label>
+                    <input type="number" id="pct-investasi" value="20" min="0" max="100" onchange="updatePersentase()">
+                </div>
+                <div class="form-group">
+                    <label>Masa Depan (%):</label>
+                    <input type="number" id="pct-masaDepan" value="10" min="0" max="100" onchange="updatePersentase()">
+                </div>
+                <div class="form-group">
+                    <label>Darurat (%):</label>
+                    <input type="number" id="pct-darurat" value="10" min="0" max="100" onchange="updatePersentase()">
+                </div>
+            </div>
+            <div id="error-pct" class="error-msg">Total persentase harus 100%! Sekarang: <span id="current-total-pct">100</span>%</div>
+        </div>
+    </div>
+
+    <!-- Riwayat Pemasukan -->
+    <h2>Riwayat Pemasukan</h2>
+    <ul id="riwayat-list">
+        <!-- Item riwayat akan dimasukkan lewat JavaScript -->
+    </ul>
+</div>
+
+<script>
+    // State aplikasi
+    let riwayatPemasukan = [];
+    let pcts = {
+        konsumsi: 40,
+        tabungan: 20,
+        investasi: 20,
+        masaDepan: 10,
+        darurat: 10
+    };
+
+    function formatRupiah(angka) {
+        return 'Rp ' + parseFloat(angka).toLocaleString('id-ID');
+    }
+
+    function hitungTotalPemasukan() {
+        return riwayatPemasukan.reduce((total, item) => total + item.nominal, 0);
+    }
+
+    function updateTampilan() {
+        const total = hitungTotalPemasukan();
+        
+        // Update label persentase
+        document.getElementById('label-konsumsi').innerText = `Konsumsi (${pcts.konsumsi}%)`;
+        document.getElementById('label-tabungan').innerText = `Tabungan (${pcts.tabungan}%)`;
+        document.getElementById('label-investasi').innerText = `Investasi (${pcts.investasi}%)`;
+        document.getElementById('label-masaDepan').innerText = `Dana Masa Depan (${pcts.masaDepan}%)`;
+        document.getElementById('label-darurat').innerText = `Dana Darurat (${pcts.darurat}%)`;
+
+        // Update nilai nominal alokasi
+        document.getElementById('val-konsumsi').innerText = formatRupiah((pcts.konsumsi / 100) * total);
+        document.getElementById('val-tabungan').innerText = formatRupiah((pcts.tabungan / 100) * total);
+        document.getElementById('val-investasi').innerText = formatRupiah((pcts.investasi / 100) * total);
+        document.getElementById('val-masaDepan').innerText = formatRupiah((pcts.masaDepan / 100) * total);
+        document.getElementById('val-darurat').innerText = formatRupiah((pcts.darurat / 100) * total);
+
+        // Update total
+        document.getElementById('total-pemasukan').innerText = 'Total Penghasilan: ' + formatRupiah(total);
+
+        // Update list riwayat
+        const listElement = document.getElementById('riwayat-list');
+        listElement.innerHTML = '';
+
+        if (riwayatPemasukan.length === 0) {
+            listElement.innerHTML = '<li style="justify-content: center; color: #95a5a6;">Belum ada riwayat pemasukan</li>';
+        } else {
+            riwayatPemasukan.forEach((item, index) => {
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div>
+                        <strong>${item.deskripsi || 'Pemasukan'}</strong><br>
+                        <span style="color: #27ae60; font-size: 14px;">${formatRupiah(item.nominal)}</span>
+                    </div>
+                    <button class="btn-delete" onclick="hapusRiwayat(${index})">Hapus</button>
+                `;
+                listElement.appendChild(li);
+            });
+        }
+    }
+
+    function tambahPemasukan() {
+        const deskripsiInput = document.getElementById('deskripsi');
+        const nominalInput = document.getElementById('nominal');
+
+        const deskripsi = deskripsiInput.value.trim();
+        const nominal = parseFloat(nominalInput.value);
+
+        if (!nominal || nominal <= 0) {
+            alert('Masukkan nominal pemasukan yang valid!');
+            return;
+        }
+
+        // Tambah ke array state
+        riwayatPemasukan.push({
+            deskripsi: deskripsi || 'Pemasukan Tanpa Keterangan',
+            nominal: nominal
+        });
+
+        // Reset input form
+        deskripsiInput.value = '';
+        nominalInput.value = '';
+
+        updateTampilan();
+    }
+
+    function hapusRiwayat(index) {
+        // Hapus item dari array berdasarkan index
+        riwayatPemasukan.splice(index, 1);
+        updateTampilan();
+    }
+
+    function updatePersentase() {
+        const c = parseFloat(document.getElementById('pct-konsumsi').value) || 0;
+        const t = parseFloat(document.getElementById('pct-tabungan').value) || 0;
+        const i = parseFloat(document.getElementById('pct-investasi').value) || 0;
+        const m = parseFloat(document.getElementById('pct-masaDepan').value) || 0;
+        const d = parseFloat(document.getElementById('pct-darurat').value) || 0;
+
+        const totalPct = c + t + i + m + d;
+        const errorEl = document.getElementById('error-pct');
+        const totalPctSpan = document.getElementById('current-total-pct');
+
+        if (totalPct !== 100) {
+            totalPctSpan.innerText = totalPct;
+            errorEl.style.display = 'block';
+        } else {
+            errorEl.style.display = 'none';
+            // Update state pcts jika totalnya pas 100%
+            pcts.konsumsi = c;
+            pcts.tabungan = t;
+            pcts.investasi = i;
+            pcts.masaDepan = m;
+            pcts.darurat = d;
+            
+            updateTampilan();
+        }
+    }
+
+    // Inisialisasi awal
+    updateTampilan();
+</script>
+
+</body>
+</html>
